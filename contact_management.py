@@ -1,5 +1,5 @@
 print("Welcome to the Contact Management System! Menu:\n")
-print(" 1. Add a new contact\n 2. Edit an existing contact\n 3, Delete a contact\n 4. Search for a contact\n 5. Display all contacts\n 6. Export contacts to a text file 7.Import contacts from a text file\n 8. Quit")  
+print(" 1. Add a new contact\n 2. Edit an existing contact\n 3, Delete a contact\n 4. Search for a contact\n 5. Display all contacts\n 6. Export contacts to a text file\n 7. Import contacts from a text file\n 8. Quit")  
 
 
 # ===============//  Functions ====================
@@ -10,12 +10,12 @@ all_contacts = {}
 def add_contact(contacts):
 # Unique ID would be used as a unique identifier
   contact = {}
-  id = str(uuid.uuid4())
 
   name = input("What is the name of contact? ").strip()
   phone_number = input("What is the phone number of contact? ").strip()
   email = input("What is the email address of contact ").strip()
   additional_info = input("What is the additional information you want to add? ").strip()
+  category = input("What is the category of contact? ").strip()
   
   name_regex = r"[a-zA-Z]{3,}"
   phone_number_regex = r"\d{3}-\d{3}-\d{4}"
@@ -24,11 +24,22 @@ def add_contact(contacts):
   # Additional info is an optional field
   # Field validations can be done one by one. In this case, it was done for all fields after adding contact
   if re.match(name_regex, name) and re.match(phone_number_regex, phone_number) and re.match(email_regex, email):
+      id = str(uuid.uuid4())
+    
       contact[id] = {}
       contact[id]["name"] = name 
       contact[id]["phone_number"] = phone_number
       contact[id]["email_address"] = email 
-      contact[id]["additional_info"] = additional_info 
+      contact[id]["additional_info"] = additional_info
+      contact[id]["category"] = []
+      contact[id]["category"].append(category)
+      
+      custom_field = input("Do you want to add custom field? (yes/no) ")
+      if custom_field == "yes":
+        key = input("Enter the custom field name: ")
+        value = input(f"Enter the value for {key}: ")
+        contact[id][key] = value
+       
       all_contacts.update(contact)
       print("\033[92m", "=========== Contact added successfully! =============" , "\033[0m")
       
@@ -44,15 +55,27 @@ def add_contact(contacts):
  # Contact can be found by any proeprty. In below functions edit and delete, it is bases on ID, and search contact function finds match contact based on email 
 def edit_contact(contacts):
    id = input('Enter the id of contact you want to edit: ')
-   field = input('Which field do you want to edit? Enter name, phone_number, email_address, or additional_info: ')
-   try:
-     print(f"\nYou are about to edit {field} of contact with email address of {contacts[id]["email_address"]}")
-     new_val = input("What is the new value? ")
-     contacts[id][field] = new_val 
-     print("\033[93m", contacts, "\033[0m")  
-   except:
-     print("\033[31m", "Failed to edit: Make sure you have entered the valid information", "\033[0m") 
-  
+   field = input('Which field do you want to edit? Enter name, phone_number, email_address, additional_info, or category: ')
+   if field != "category":
+      try:
+        print(f"\nYou are about to edit {field} of contact with email address of {contacts[id]["email_address"]}")
+        new_val = input("What is the new value? ")
+        contacts[id][field] = new_val 
+        print("\033[93m", contacts, "\033[0m")  
+      except:
+        print("\033[31m", "Failed to edit: Make sure you have entered the valid information", "\033[0m") 
+    
+   elif field == "category":
+     action = input("Do you want to add new category or delete existing one? (add/delete): ")
+     if action == "add":
+       new_val = input("What is the new category you want to add? ")
+       if new_val not in contacts[id][field]:
+         contacts[id][field].append(new_val)
+         
+     elif action == "delete":
+       new_val = input("What is the category you want to delete? ")
+       contacts[id][field].remove(new_val)
+         
 
 def delete_contact(contacts):
    id = input('Enter the id of contact you want to delete: ')
@@ -63,23 +86,63 @@ def delete_contact(contacts):
    except:
       print("\033[31m", "Failed to delete: Make sure you have entered the valid information", "\033[0m") 
   
+  
+  
 def search_contact(contacts):
-    email = input('Enter the email of contact you want to view: ')
+    
     found_contact = {}
     contact_found = False
     
-    for contact in contacts.values():
-      if contact["email_address"] == email:
-        contact_found = True
-        found_contact.update(contact)
-        print("\033[93m", found_contact, "\033[0m") 
+    search_criteria = input("Enter your search criteria: Ex. name, phone, email, or additional_info ")
+    if search_criteria == "name":
+      name = input("Enter the name of contact you want to view:")
+      for contact in contacts.values():
+        if contact["name"] == name:
+          contact_found = True
+          found_contact.update(contact)
+          print("\033[93m", found_contact, "\033[0m") 
       
+    if search_criteria == "email":
+      email = input('Enter the email of contact you want to view: ')
+      for contact in contacts.values():
+        if contact["email_address"] == email:
+          contact_found = True
+          found_contact.update(contact)
+          print("\033[93m", found_contact, "\033[0m") 
+          
+    if search_criteria == "phone":
+      phone = input('Enter the phone number (ex. ###-###-####) of contact you want to view: ')
+      for contact in contacts.values():
+        if contact["phone_number"] == phone:
+          contact_found = True
+          found_contact.update(contact)
+          print("\033[93m", found_contact, "\033[0m")    
+          
+    if search_criteria == "additional_info":
+      additional_info = input('Enter the additional info related to the contact that you want to view: ')
+      for contact in contacts.values():
+        if contact["additional_info"] == additional_info:
+          contact_found = True
+          found_contact.update(contact)
+          print("\033[93m", found_contact, "\033[0m")            
+        
     if not contact_found:
         print("\033[31m", "Failed to find contact: Make sure you have entered the valid email address", "\033[0m") 
-  
+    
 
 def display_contacts(contacts):
-  print("\033[93m", contacts, "\033[0m") 
+  sort_status = input("Enter 'or', 'asc', 'desc' to view contacts in original, ascending, or descending order respectively: ")
+  if sort_status == 'or':
+    print("\033[93m", contacts, "\033[0m")
+    
+  elif sort_status == 'asc':
+    sort_criteria = input("Enter sort criteria. Ex. name, email_address, or phone_number: ")
+    print("\033[93m", {k: v for k, v in sorted(contacts.items(), key=lambda item: item[1][sort_criteria])}, "\033[0m")   
+
+  elif sort_status == 'desc':
+    sort_criteria = input("Enter sort criteria. Ex. name, email_address, or phone_number: ")
+    print("\033[93m",  {k: v for k, v in sorted(contacts.items(), key=lambda item: item[1][sort_criteria], reverse=True)},  "\033[0m" ) 
+
 
 #export data in the formats of text and JSON
 def export_data(contacts):
@@ -128,7 +191,7 @@ def run_app():
         break
 
       else:
-        print('Invalid Number')
+        print("\033[31m",'Invalid Number',"\033[0m")
 
 
 
