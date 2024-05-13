@@ -93,38 +93,31 @@ def search_contact(contacts):
     found_contact = {}
     contact_found = False
     
-    search_criteria = input("Enter your search criteria: Ex. name, phone, email, or additional_info ")
-    if search_criteria == "name":
-      name = input("Enter the name of contact you want to view:")
-      for contact in contacts.values():
-        if contact["name"] == name:
+    # Define function for usability and follow DRY principle 
+    def loop_find_contact(field, criteria):
+     nonlocal contact_found
+     for contact in contacts.values():
+        if contact[field] == criteria:
           contact_found = True
           found_contact.update(contact)
           print("\033[93m", found_contact, "\033[0m") 
+    
+    search_criteria = input("Enter your search criteria: Ex. name, phone, email, or additional_info ")
+    if search_criteria == "name":
+      name = input("Enter the name of contact you want to view: ")
+      loop_find_contact("name", name)
       
     if search_criteria == "email":
       email = input('Enter the email of contact you want to view: ')
-      for contact in contacts.values():
-        if contact["email_address"] == email:
-          contact_found = True
-          found_contact.update(contact)
-          print("\033[93m", found_contact, "\033[0m") 
+      loop_find_contact("email", email) 
           
     if search_criteria == "phone":
       phone = input('Enter the phone number (ex. ###-###-####) of contact you want to view: ')
-      for contact in contacts.values():
-        if contact["phone_number"] == phone:
-          contact_found = True
-          found_contact.update(contact)
-          print("\033[93m", found_contact, "\033[0m")    
+      loop_find_contact("phone_number", phone)    
           
     if search_criteria == "additional_info":
       additional_info = input('Enter the additional info related to the contact that you want to view: ')
-      for contact in contacts.values():
-        if contact["additional_info"] == additional_info:
-          contact_found = True
-          found_contact.update(contact)
-          print("\033[93m", found_contact, "\033[0m")            
+      loop_find_contact("additional_info", additional_info)         
         
     if not contact_found:
         print("\033[31m", "Failed to find contact: Make sure you have entered the valid email address", "\033[0m") 
@@ -192,8 +185,6 @@ def run_app():
 
       else:
         print("\033[31m",'Invalid Number',"\033[0m")
-
-
 
 
 run_app()
